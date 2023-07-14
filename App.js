@@ -1,20 +1,25 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { TouchableWithoutFeedback, Keyboard } from "react-native";
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import Navigation from "./src/Screens/Navigation/Navigation";
+import { Provider } from "react-redux";
+import store from "./src/Redux/store";
+import LoadingScreen from "./src/Elements/Loading";
+import AuthChack from "./src/Elements/AuthChack";
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Provider store={store}>
+      <>
+        <LoadingScreen />
+        <AuthChack>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <NavigationContainer>
+              <Navigation />
+            </NavigationContainer>
+          </TouchableWithoutFeedback>
+        </AuthChack>
+      </>
+    </Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
