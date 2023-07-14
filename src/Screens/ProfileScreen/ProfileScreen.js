@@ -12,8 +12,8 @@ import {
 import { Feather, EvilIcons } from "@expo/vector-icons";
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-const backImage = require("../../Source/Photo_BG.png");
-const buttonImg = require("../RegistrationScreen/add.png");
+const backImage = require("../../Source/BG.png");
+const buttonImg = require("../../Source/add.png");
 const profilePhoto = require("../../Source/Rectangle22.png");
 
 import { useSelector } from "react-redux";

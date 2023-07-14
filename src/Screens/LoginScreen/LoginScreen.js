@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-const backImage = require("../../Source/Photo_BG.png");
+const backImage = require("../../Source/BG.png");
 import { useSelector } from "react-redux";
 import { selectIsAuth, selectUser } from "../../Redux/auth/authSelectors";
 import { useDispatch } from "react-redux";
@@ -24,6 +24,7 @@ import { fetchGetAllPosts } from "../../Redux/posts/postsOperations";
 
 const LoginScreen = ({ navigation }) => {
   const logedIn = useSelector(selectIsAuth);
+  const [showPassword, setShowPassword] = useState(true);
 
   if (logedIn) {
     navigation.navigate("Home", { screen: "PostsScreen" });
@@ -41,6 +42,15 @@ const LoginScreen = ({ navigation }) => {
        return emailRegex.test(email);
     };
     
+  const clearForm = () => {
+    setMail("");
+    setPassword("");
+  };
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
   const handleMail = (text) => {
     setMail(text);
   };
@@ -53,12 +63,13 @@ const LoginScreen = ({ navigation }) => {
       alert("Enter all data pleace!!!");
       return;
       }
-      clearForm();
+       clearForm();
       
       if (!isValidEmail(mail)) {
         alert("Enter a valid email address!");
         return;
-      }
+    }
+    
     dispatch(fetchLoginUser({ mail, password })).then((result) => {
       result.type === "auth/fetchLoginUser/fulfilled" &&
         navigation.navigate("Home", { screen: "PostsScreen" });
@@ -90,7 +101,7 @@ const LoginScreen = ({ navigation }) => {
               <TextInput
                 style={styles.inputMailPassw}
                 placeholder="Password"
-                secureTextEntry={true}
+                secureTextEntry={!showPassword}
                 value={password}
                 onChangeText={handlePassword}
               />
@@ -98,9 +109,12 @@ const LoginScreen = ({ navigation }) => {
               <TouchableOpacity
                 style={styles.passwShow}
                 activeOpacity={0.5}
-                onPress={passwShow}
+                
+                onPress={toggleShowPassword}
               >
-                <Text style={styles.passwShowText}>Show</Text>
+                <Text style={styles.passwShowText}>
+                  {showPassword ? "Show" : "Hide"}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
