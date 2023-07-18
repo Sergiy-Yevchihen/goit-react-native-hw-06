@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
+  ImageBackground,
   View,
   TouchableOpacity,
   TextInput,
@@ -9,85 +9,40 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
-  ImageBackground,
   Image,
 } from "react-native";
+import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
+const backImage = require("../../Source/BG.png");
 import { useDispatch } from "react-redux";
 import { fetchRegisterUser } from "../../Redux/auth/authOperations";
 import { AntDesign } from "@expo/vector-icons";
 
-const backImage = require("../../Source/BG.png");
 const buttonImg = require("../../Source/add.png");
 
 const RegistrationScreen = ({ navigation, route }) => {
   const { photo } = route.params;
   const dispatch = useDispatch();
 
-  const [showPassword, setShowPassword] = useState(true);
   const [login, setLogin] = useState("");
   const [mail, setMail] = useState("");
   const [password, setPassword] = useState("");
-  const [inputFocused, setInputFocused] = useState(false);
-  const [input1Focused, setInput1Focused] = useState(false);
-  const [input2Focused, setInput2Focused] = useState(false);
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const isValidEmail = (email) => {
-    const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-    return emailRegex.test(email);
-  };
 
   const handleLogin = (text) => {
     setLogin(text);
   };
-
   const handleMail = (text) => {
     setMail(text);
   };
-
   const handlePassword = (text) => {
     setPassword(text);
   };
 
-  const handleInputFocus = () => {
-    setInputFocused(true);
-  };
-
-  const handleInputBlur = () => {
-    setInputFocused(false);
-  };
-
-  const handleInput1Focus = () => {
-    setInput1Focused(true);
-  };
-
-  const handleInput1Blur = () => {
-    setInput1Focused(false);
-  };
-
-  const handleInput2Focus = () => {
-    setInput2Focused(true);
-  };
-
-  const handleInput2Blur = () => {
-    setInput2Focused(false);
-  };
-
   const register = () => {
     if (!login || !mail || !password) {
-      alert("Enter all data please!!!");
+      alert("Enter all data pleace!!!");
       return;
     }
-    if (!isValidEmail(mail)) {
-      alert("Enter a valid email address!");
-      return;
-    }
-
     dispatch(fetchRegisterUser({ mail, password, login, photo })).then(
       (result) => {
         result.type === "auth/fetchRegisterUser/fulfilled" &&
@@ -98,30 +53,11 @@ const RegistrationScreen = ({ navigation, route }) => {
     );
   };
 
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      () => {
-        setKeyboardVisible(true);
-      }
-    );
-
-    const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
-      () => {
-        setKeyboardVisible(false);
-      }
-    );
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
-
   const takePhoto = () => {
     navigation.navigate("ProfilePhotoScreen");
   };
+
+  const passwShow = () => alert(`Your password is: ${password}`);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -134,67 +70,56 @@ const RegistrationScreen = ({ navigation, route }) => {
             <View style={styles.container}>
               <View style={styles.pfotoContainer}>
                 {photo && (
-                  <Image source={{ uri: photo }} style={styles.photoProf} />
+                  <Image
+                    source={{ uri: `${photo}` }}
+                    style={styles.photoProf}
+                  />
                 )}
               </View>
               <TouchableOpacity
                 style={styles.addbutton}
                 activeOpacity={0.5}
-                onPress={takePhoto}
+                onPress={() => {
+                  takePhoto();
+                }}
               >
+                {/* <ImageBackground source={buttonImg} style={{width: '100%', height: '100%'}}></ImageBackground> */}
                 <AntDesign name="pluscircleo" size={24} color="red" />
               </TouchableOpacity>
               <Text style={styles.title}>Registration</Text>
 
               <TextInput
-                style={[styles.inputLogin, inputFocused && styles.inputFocused]}
+                style={styles.inputLogin}
                 placeholder="Login"
                 inputMode="text"
                 value={login}
                 onChangeText={handleLogin}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
               />
               <TextInput
-                style={[
-                  styles.inputMailPassw,
-                  input1Focused && styles.inputFocused,
-                ]}
+                style={styles.inputMailPassw}
                 placeholder="Email address"
                 inputMode="email"
                 value={mail}
                 onChangeText={handleMail}
-                onFocus={handleInput1Focus}
-                onBlur={handleInput1Blur}
               />
               <TextInput
-                style={[
-                  styles.inputMailPassw,
-                  input2Focused && styles.inputFocused,
-                ]}
+                style={styles.inputMailPassw}
                 placeholder="Password"
-                secureTextEntry={!showPassword}
+                secureTextEntry={true}
                 value={password}
                 onChangeText={handlePassword}
-                onFocus={handleInput2Focus}
-                onBlur={handleInput2Blur}
               />
 
               <TouchableOpacity
                 style={styles.passwShow}
                 activeOpacity={0.5}
-                onPress={toggleShowPassword}
+                onPress={passwShow}
               >
-                <Text style={styles.passwShowText}>
-                  {showPassword ? "Show" : "Hide"}
-                </Text>
+                <Text style={styles.passwShowText}>Show</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[
-                  styles.registerButton,
-                  keyboardVisible && styles.hiddenButton,
-                ]}
+                style={styles.registerButton}
                 activeOpacity={0.5}
                 onPress={register}
               >
@@ -202,10 +127,7 @@ const RegistrationScreen = ({ navigation, route }) => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[
-                  styles.loginLink,
-                  keyboardVisible && styles.hiddenButton,
-                ]}
+                style={styles.loginLink}
                 activeOpacity={0.5}
                 onPress={() => navigation.navigate("Login")}
               >
@@ -257,9 +179,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: "hidden",
   },
+
   addbutton: {
     position: "absolute",
-    left: "63%",
+    left: "62%",
     top: 10,
     pointerEvents: "auto",
   },
@@ -281,12 +204,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 19,
   },
-  hiddenButton: {
-    opacity: 0,
-    height: 0,
-    width: 0,
-    position: "absolute",
-  },
   inputMailPassw: {
     backgroundColor: "#F6F6F6",
     width: 343,
@@ -298,9 +215,6 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     fontSize: 16,
     position: "relative",
-  },
-  inputFocused: {
-    borderColor: "#FF6C00",
   },
   passwShowText: {
     fontStyle: "normal",

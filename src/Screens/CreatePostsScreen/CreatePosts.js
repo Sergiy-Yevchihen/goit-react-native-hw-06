@@ -1,35 +1,22 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Image,
-} from "react-native";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-
 import { Camera } from "expo-camera";
 import * as Location from "expo-location";
-
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUploadPhoto } from "../../Redux/storage/storageOperations";
 import { fetchAddPost } from "../../Redux/posts/postsOperations";
 import { selectUserId } from "../../Redux/auth/authSelectors";
 
-const trashImg = require("../../Source/trash.png");
-
 const CreatePost = ({ navigation }) => {
   const [camera, setCamera] = useState(null);
-  const [photoi, setPhoto] = useState(null);
+  const [photo, setPhoto] = useState(null);
   const [location, setLocation] = useState(null);
   const [region, setRegion] = useState(null);
   const [inputRegion, setInputRegion] = useState("");
   const [title, setTitle] = useState("");
 
   const dispatch = useDispatch();
-
   const uid = useSelector(selectUserId);
 
   useEffect(() => {
@@ -39,84 +26,86 @@ const CreatePost = ({ navigation }) => {
         console.log("Permission to access location was denied");
       }
 
-      Location.getCurrentPositionAsync({})
-        .then((locationPos) => {
-          const coords = {
-            latitude: locationPos.coords.latitude,
-            longitude: locationPos.coords.longitude,
-          };
-          setLocation(coords);
-          return coords;
-        })
-        .then((coords) => {
-          return Location.reverseGeocodeAsync(coords);
-        })
-        .then((regionName) => setRegion(regionName))
-        .catch();
+      const locationPos = await Location.getCurrentPositionAsync({});
+      const coords = {
+        latitude: locationPos.coords.latitude,
+        longitude: locationPos.coords.longitude,
+      };
+
+      setLocation(coords);
+
+      const regionName = await Location.reverseGeocodeAsync(coords);
+      setRegion(regionName);
     })();
   }, []);
 
   const active = title && region;
 
   const takePhoto = async () => {
-    const photo = await camera.takePictureAsync();
-    setPhoto(photo.uri);
-    setInputRegion(region[0]["country"] + ", " + region[0]["city"]);
+    if (camera) {
+      const photo = await camera.takePictureAsync();
+      setPhoto(photo.uri);
+      setInputRegion(region[0].country + ", " + region[0].city);
+    }
   };
 
-  const inputTitlte = (text) => {
+  const inputTitle = (text) => {
     setTitle(text);
   };
 
-  const hendleCreate = async () => {
-    if (!title || !location || !photoi) {
-      alert("Enter all data pleace!!!");
+  const handleCreate = async () => {
+    if (!title || !location || !photo) {
+      alert("Please enter all data!!!");
       return;
     }
-    const { payload } = await dispatch(fetchUploadPhoto(photoi));
+
+    const { payload } = await dispatch(fetchUploadPhoto(photo));
     await dispatch(
       fetchAddPost({ photo: payload, title, inputRegion, location, uid })
     );
+
     navigation.navigate("PostList");
   };
 
   return (
     <View style={styles.postContainer}>
       <Camera style={styles.postImg} ref={setCamera}>
-        <Image
-          source={{ uri: photoi }}
-          style={{ height: 220, width: 220, marginTop: -80 }}
-        />
-      </Camera>
-
-      <TouchableOpacity
-        style={styles.postImgAdd}
-        activeOpacity={0.5}
-        onPress={takePhoto}
-      >
-        <FontAwesome name="camera" size={24} color="white" />
-      </TouchableOpacity>
-
-      <Text style={styles.postImgText}>Add photo</Text>
+        <View style={styles.takePhotoContainer}>
+          
+            <Image
+              source={{ uri: photo }}
+              style={{ height: 220, width: 220, marginTop: -80 }}
+            />
+          
+        </View>
+</Camera>
+        <TouchableOpacity
+          style={styles.postImgAdd}
+          activeOpacity={0.5}
+          onPress={takePhoto}
+        >
+          <FontAwesome name="camera" size={24} color="white" />
+        </TouchableOpacity>
+      
       <View style={styles.postForm}>
         <TextInput
           style={styles.postName}
           placeholder="Title..."
           inputMode="text"
-          onChangeText={inputTitlte}
+          onChangeText={inputTitle}
         />
         <TextInput
           style={styles.postName}
           placeholder="Location"
-          inputMode="navigation"
+          inputMode="text"
           value={inputRegion}
         />
         <TouchableOpacity
           style={active ? styles.postButtonActive : styles.postButton}
           activeOpacity={0.5}
-          onPress={hendleCreate}
+          onPress={handleCreate}
         >
-          <Text style={styles.postButtonText}>Publicate</Text>
+          <Text style={styles.postButtonText}>Publish</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -129,6 +118,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fff",
+  },
+  takePhotoContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    borderColor: "#fff",
+    height: 200,
+    width: 200,
   },
   postImg: {
     flex: 3,
@@ -149,10 +146,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
-  },
-  postImgText: {
-    alignItems: "flex-start",
-    color: "#fff",
   },
   postForm: {
     flex: 3,

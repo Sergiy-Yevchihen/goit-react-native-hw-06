@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
-import { db } from "../../Api/firebase";
+import { db } from "../../Api/config";
 
 export const fetchAddComment = createAsyncThunk(
   "comments/fetchAddComment",

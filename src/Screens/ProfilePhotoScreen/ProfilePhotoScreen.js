@@ -13,24 +13,30 @@ import { useDispatch } from "react-redux";
 import { fetchUploadPhoto } from "../../Redux/storage/storageOperations";
 
 import { Camera } from "expo-camera";
+import bd from '../../Api/config';
 
 const ProfilePhotoScreen = ({ navigation }) => {
   const dispatch = useDispatch();
 
   const [camera, setCamera] = useState(null);
-  const [photoi, setPhoto] = useState(null);
+  const [photo, setPhoto] = useState(null);
 
   const takePhoto = async () => {
     const photo = await camera.takePictureAsync();
     setPhoto(photo.uri);
   };
-
+  const upLoadPhotoToServer = async (photo) => {
+    const response = await fetch(photo);
+    const file = await response.blob();
+    const uniquePostId = date.now().toString();
+    await db.storage().ref(`postImage/${uniquePostId}`).put(file);
+  };
   const hendleCreate = async () => {
-    if (!photoi) {
+    if (!photo) {
       alert("Take photo!!!");
       return;
     }
-    const { payload } = await dispatch(fetchUploadPhoto(photoi));
+    const { payload } = await dispatch(fetchUploadPhoto(photo));
     navigation.navigate("Registratione", { photo: payload });
   };
 
@@ -38,7 +44,7 @@ const ProfilePhotoScreen = ({ navigation }) => {
     <View style={styles.postContainer}>
       <Camera style={styles.postImg} ref={setCamera}>
         <Image
-          source={{ uri: photoi }}
+          source={{ uri: photo }}
           style={{ height: 220, width: 220, marginTop: -80 }}
         />
       </Camera>
@@ -52,9 +58,10 @@ const ProfilePhotoScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={photoi ? styles.postButtonActive : styles.postButton}
+        style={photo ? styles.postButtonActive : styles.postButton}
         activeOpacity={0.5}
         onPress={hendleCreate}
+        // 
       >
         <Text style={styles.postButtonText}>Publicate</Text>
       </TouchableOpacity>

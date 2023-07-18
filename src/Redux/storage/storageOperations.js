@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
-import { db } from "../../Api/firebase";
+import { db } from "../../Api/config";
 
 const storage = getStorage();
 
