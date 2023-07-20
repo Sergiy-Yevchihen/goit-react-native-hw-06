@@ -1,5 +1,11 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import {
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytes,
+  deleteObject,
+} from "firebase/storage";
 import { db } from "../../Api/config";
 
 const storage = getStorage();
@@ -18,7 +24,7 @@ export const fetchUploadPhoto = createAsyncThunk(
 
       return storeLink;
     } catch (error) {
-      return thunkAPI.rejectWithValue(e.message);
+      return thunkAPI.rejectWithValue(error.message);
     }
   }
 );
@@ -31,7 +37,7 @@ export const fetchDeldPhoto = createAsyncThunk(
       const desertRef = ref(storage, photo);
       await deleteObject(desertRef);
     } catch (error) {
-      return thunkAPI.rejectWithValue(e.message);
+      return thunkAPI.rejectWithValue(error.message);
     }
   }
 );

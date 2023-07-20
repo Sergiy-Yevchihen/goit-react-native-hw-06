@@ -23,7 +23,7 @@ export const fetchRegisterUser = createAsyncThunk(
         }));
       return result.user;
     } catch (error) {
-      return thunkAPI.rejectWithValue(e.message);
+      return thunkAPI.rejectWithValue(error.message);
     }
   }
 );
@@ -36,7 +36,7 @@ export const fetchLoginUser = createAsyncThunk(
       const result = await signInWithEmailAndPassword(auth, mail, password);
       return result._tokenResponse;
     } catch (error) {
-      return thunkAPI.rejectWithValue(e.message);
+      return thunkAPI.rejectWithValue(error.message);
     }
   }
 );
