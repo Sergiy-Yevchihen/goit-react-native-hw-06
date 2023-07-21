@@ -1,3 +1,6 @@
+import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { fetchRegisterUser } from "../../Redux/auth/authOperations";
 import {
   StyleSheet,
   Text,
@@ -11,13 +14,10 @@ import {
   Keyboard,
   Image,
 } from "react-native";
-import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-const backImage = require("../../Source/BG.png");
-import { useDispatch } from "react-redux";
-import { fetchRegisterUser } from "../../Redux/auth/authOperations";
 import { AntDesign } from "@expo/vector-icons";
 
+const backImage = require("../../Source/BG.png");
 const buttonImg = require("../../Source/add.png");
 
 const RegistrationScreen = ({ navigation, route }) => {
@@ -27,6 +27,11 @@ const RegistrationScreen = ({ navigation, route }) => {
   const [login, setLogin] = useState("");
   const [mail, setMail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [inputFocused, setInputFocused] = useState(false);
+  const [input1Focused, setInput1Focused] = useState(false);
+  const [input2Focused, setInput2Focused] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const handleLogin = (text) => {
     setLogin(text);
@@ -38,19 +43,43 @@ const RegistrationScreen = ({ navigation, route }) => {
     setPassword(text);
   };
 
+  const handleInputFocus = () => {
+    setInputFocused(true);
+  };
+
+  const handleInputBlur = () => {
+    setInputFocused(false);
+  };
+
+  const handleInput1Focus = () => {
+    setInput1Focused(true);
+  };
+
+  const handleInput1Blur = () => {
+    setInput1Focused(false);
+  };
+
+  const handleInput2Focus = () => {
+    setInput2Focused(true);
+  };
+
+  const handleInput2Blur = () => {
+    setInput2Focused(false);
+  };
+
   const register = () => {
     if (!login || !mail || !password) {
       alert("Enter all data pleace!!!");
       return;
     }
-    dispatch(fetchRegisterUser({ mail, password, login, photo })).then(
-      (result) => {
-        result.type === "auth/fetchRegisterUser/fulfilled" &&
-          navigation.navigate("Home", { screen: "PostsScreen" });
-        result.type !== "auth/fetchRegisterUser/fulfilled" &&
-          alert("Incorrect registration!!!");
-      }
-    );
+    dispatch(fetchRegisterUser({ mail, password, login, photo }))
+      .unwrap()
+      .then(() => {
+        navigation.navigate("Home", { screen: "PostsScreen" });
+      })
+      .catch((error) => {
+        alert("Incorrect registration!!!");
+      });
   };
 
   const takePhoto = () => {
@@ -58,6 +87,27 @@ const RegistrationScreen = ({ navigation, route }) => {
   };
 
   const passwShow = () => alert(`Your password is: ${password}`);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setKeyboardVisible(true);
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -83,31 +133,42 @@ const RegistrationScreen = ({ navigation, route }) => {
                   takePhoto();
                 }}
               >
-                {/* <ImageBackground source={buttonImg} style={{width: '100%', height: '100%'}}></ImageBackground> */}
                 <AntDesign name="pluscircleo" size={24} color="red" />
               </TouchableOpacity>
               <Text style={styles.title}>Registration</Text>
 
               <TextInput
-                style={styles.inputLogin}
+                style={[styles.inputLogin, inputFocused && styles.inputFocused]}
                 placeholder="Login"
                 inputMode="text"
                 value={login}
                 onChangeText={handleLogin}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
               />
               <TextInput
-                style={styles.inputMailPassw}
+                style={[
+                  styles.inputMailPassw,
+                  input1Focused && styles.inputFocused,
+                ]}
                 placeholder="Email address"
                 inputMode="email"
                 value={mail}
                 onChangeText={handleMail}
+                onFocus={handleInput1Focus}
+                onBlur={handleInput1Blur}
               />
               <TextInput
-                style={styles.inputMailPassw}
+                style={[
+                  styles.inputMailPassw,
+                  input2Focused && styles.inputFocused,
+                ]}
                 placeholder="Password"
                 secureTextEntry={true}
                 value={password}
                 onChangeText={handlePassword}
+                onFocus={handleInput2Focus}
+                onBlur={handleInput2Blur}
               />
 
               <TouchableOpacity
@@ -119,7 +180,10 @@ const RegistrationScreen = ({ navigation, route }) => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.registerButton}
+                style={[
+                  styles.registerButton,
+                  keyboardVisible && styles.hiddenButton,
+                ]}
                 activeOpacity={0.5}
                 onPress={register}
               >
@@ -127,7 +191,10 @@ const RegistrationScreen = ({ navigation, route }) => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.loginLink}
+                style={[
+                  styles.loginLink,
+                  keyboardVisible && styles.hiddenButton,
+                ]}
                 activeOpacity={0.5}
                 onPress={() => navigation.navigate("Login")}
               >
@@ -148,6 +215,12 @@ const styles = StyleSheet.create({
   maincontainer: {
     flex: 1,
     alignItems: "center",
+  },
+  hiddenButton: {
+    opacity: 0,
+    height: 0,
+    width: 0,
+    position: "absolute",
   },
   photoProf: {
     width: "100%",
@@ -192,6 +265,11 @@ const styles = StyleSheet.create({
     marginTop: 32,
     lineHeight: 35,
   },
+  inputFocused: {
+    borderColor: "#FF6C00",
+    borderRadius: 8,
+    backgroundColor: "#ebebeb",
+  },
   inputLogin: {
     backgroundColor: "#F6F6F6",
     width: 343,
@@ -202,7 +280,9 @@ const styles = StyleSheet.create({
     fontStyle: "normal",
     fontWeight: "400",
     fontSize: 16,
+    borderWidth: 1,
     lineHeight: 19,
+    borderColor: "#E8E8E8",
   },
   inputMailPassw: {
     backgroundColor: "#F6F6F6",
@@ -214,7 +294,9 @@ const styles = StyleSheet.create({
     fontStyle: "normal",
     fontWeight: "400",
     fontSize: 16,
+    borderWidth: 1,
     position: "relative",
+    borderColor: "#E8E8E8",
   },
   passwShowText: {
     fontStyle: "normal",
