@@ -25,6 +25,26 @@ import { fetchGetAllPosts } from "../../Redux/posts/postsOperations";
 const LoginScreen = ({ navigation }) => {
   const logedIn = useSelector(selectIsAuth);
 
+  const [input1Focused, setInput1Focused] = useState(false);
+  const [input2Focused, setInput2Focused] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  const handleInput1Focus = () => {
+    setInput1Focused(true);
+  };
+
+  const handleInput1Blur = () => {
+    setInput1Focused(false);
+  };
+
+  const handleInput2Focus = () => {
+    setInput2Focused(true);
+  };
+
+  const handleInput2Blur = () => {
+    setInput2Focused(false);
+  };
+
   useEffect(() => {
     if (logedIn) {
       navigation.navigate("Home", { screen: "PostsScreen" });
@@ -60,6 +80,28 @@ const LoginScreen = ({ navigation }) => {
 
   const passwShow = () => alert(`Your password is: ${password}`);
 
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setKeyboardVisible(true);
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.maincontainer}>
@@ -72,18 +114,28 @@ const LoginScreen = ({ navigation }) => {
               <Text style={styles.title}>Login</Text>
 
               <TextInput
-                style={styles.inputMailPassw}
+                style={[
+                  styles.inputMailPassw,
+                  input1Focused && styles.inputFocused,
+                ]}
                 placeholder="Email address"
                 inputMode="email"
                 value={mail}
                 onChangeText={handleMail}
+                onFocus={handleInput1Focus}
+                onBlur={handleInput1Blur}
               />
               <TextInput
-                style={styles.inputMailPassw}
+                style={[
+                  styles.inputMailPassw,
+                  input2Focused && styles.inputFocused,
+                ]}
                 placeholder="Password"
                 secureTextEntry={true}
                 value={password}
                 onChangeText={handlePassword}
+                onFocus={handleInput2Focus}
+                onBlur={handleInput2Blur}
               />
 
               <TouchableOpacity
@@ -95,7 +147,10 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.registerButton}
+                style={[
+                  styles.registerButton,
+                  keyboardVisible && styles.hiddenButton,
+                ]}
                 activeOpacity={0.5}
                 onPress={() => {
                   register();
@@ -105,7 +160,10 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.loginLink}
+                style={[
+                  styles.loginLink,
+                  keyboardVisible && styles.hiddenButton,
+                ]}
                 activeOpacity={0.5}
                 onPress={() => navigation.navigate("Registratione", {})}
               >
@@ -174,6 +232,8 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     fontSize: 16,
     lineHeight: 19,
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
   },
   inputMailPassw: {
     backgroundColor: "#F6F6F6",
@@ -186,6 +246,13 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     fontSize: 16,
     position: "relative",
+    borderWidth: 1,
+    borderColor: "#E8E8E8",
+  },
+  inputFocused: {
+    borderColor: "#FF6C00",
+    borderRadius: 8,
+    backgroundColor: "#ebebeb",
   },
   passwShowText: {
     fontStyle: "normal",
@@ -209,6 +276,12 @@ const styles = StyleSheet.create({
   registerButtonText: {
     color: "#fff",
     fontWeight: "400",
+  },
+  hiddenButton: {
+    opacity: 0,
+    height: 0,
+    width: 0,
+    position: "absolute",
   },
   loginLink: {
     marginTop: 16,
