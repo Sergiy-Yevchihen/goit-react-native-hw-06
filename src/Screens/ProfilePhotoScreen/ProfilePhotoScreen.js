@@ -5,7 +5,8 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
 import { fetchUploadPhoto } from "../../Redux/storage/storageOperations";
 import { Camera } from "expo-camera";
-import firebase from "../../Api/config";
+import firebase from "../../Api/firebase";
+import db from "../../Api/firebase";
 
 const ProfilePhotoScreen = ({ navigation }) => {
   const dispatch = useDispatch();

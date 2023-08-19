@@ -16,7 +16,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { fetchGetCommentsByUid } from "../../Redux/comments/commentsOperations";
-import { db } from "../../Api/config";
+import { db } from "../../Api/firebase";
 import { useSelector } from "react-redux";
 import {
   selectCommentsById,

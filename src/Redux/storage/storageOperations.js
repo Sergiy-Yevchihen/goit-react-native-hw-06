@@ -6,7 +6,7 @@ import {
   uploadBytes,
   deleteObject,
 } from "firebase/storage";
-import { db } from "../../Api/config";
+import { db } from "../../Api/firebase";
 
 const storage = getStorage();
 
