@@ -5,13 +5,12 @@ import { getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
 
  const firebaseConfig = {
-   apiKey: "AIzaSyCDJQo-zwRYqdJH8jJVJTASCc4Zh_Rh73U",
-   authDomain: "react-native-hw-06-2b58c.firebaseapp.com",
-   projectId: "react-native-hw-06-2b58c",
-   storageBucket: "react-native-hw-06-2b58c.appspot.com",
-   messagingSenderId: "1072289562368",
-   appId: "1:1072289562368:web:4b94c12d1ea62edc92fde5",
-   measurementId: "G-3S66Q08XQL",
+   apiKey: "AIzaSyDZA6dBn2fHuSmotEl0JjKBYJdAVP17-Rs",
+   authDomain: "test-hw6-d0b42.firebaseapp.com",
+   projectId: "test-hw6-d0b42",
+   storageBucket: "test-hw6-d0b42.appspot.com",
+   messagingSenderId: "379964842643",
+   appId: "1:379964842643:web:16e710e68144a0a358a366",
  };
 
 
