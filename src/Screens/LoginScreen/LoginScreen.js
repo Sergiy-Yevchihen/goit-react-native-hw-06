@@ -1,298 +1,267 @@
+import React, { useState, useEffect, useCallback } from "react";
 import {
   StyleSheet,
-  Text,
-  ImageBackground,
-  View,
-  TouchableOpacity,
   TextInput,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  Text,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  ImageBackground,
+  Dimensions,
 } from "react-native";
-import React, { useState, useEffect } from "react";
-import { StatusBar } from "expo-status-bar";
-const backImage = require("../../Source/BG.png");
-import { useSelector } from "react-redux";
-import { selectIsAuth, selectUser } from "../../Redux/auth/authSelectors";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 import { useDispatch } from "react-redux";
-import {
-  fetchLoginUser,
-  fetchCurrentUser,
-} from "../../Redux/auth/authOperations";
-import { fetchGetAllPosts } from "../../Redux/posts/postsOperations";
 
-const LoginScreen = ({ navigation }) => {
-  const logedIn = useSelector(selectIsAuth);
+import { authSignInUser } from "../redux/auth/authOperations";
 
-  const [input1Focused, setInput1Focused] = useState(false);
-  const [input2Focused, setInput2Focused] = useState(false);
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
+export const LoginScreen = ({ navigation }) => {
+  const [fontsLoaded] = useFonts({
+    Roboto: require("../assets/fonts/Roboto-Regular.ttf"),
+    RobotoMedium: require("../assets/fonts/Roboto-Medium.ttf"),
+    RobotoBold: require("../assets/fonts/Roboto-Bold.ttf"),
+  });
 
-  const handleInput1Focus = () => {
-    setInput1Focused(true);
-  };
-
-  const handleInput1Blur = () => {
-    setInput1Focused(false);
-  };
-
-  const handleInput2Focus = () => {
-    setInput2Focused(true);
-  };
-
-  const handleInput2Blur = () => {
-    setInput2Focused(false);
-  };
-
-  useEffect(() => {
-    if (logedIn) {
-      navigation.navigate("Home", { screen: "PostsScreen" });
-    }
-  }, [logedIn, navigation]);
-
-  //state
-  const [mail, setMail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  //redux
+  const [windowWidth, setWindowWidth] = useState(
+    Dimensions.get("window").width
+  );
+  const [windowHeight, setWindowHeight] = useState(
+    Dimensions.get("window").height
+  );
+
+  const [isFocusedEmail, setIsFocusedEmail] = useState(false);
+  const [isFocusedPassword, setIsFocusedPassword] = useState(false);
+
+  const [isPasswordHidden, setIsPasswordHidden] = useState(true);
+
   const dispatch = useDispatch();
 
-  const handleMail = (text) => {
-    setMail(text);
-  };
-  const handlePassword = (text) => {
-    setPassword(text);
-  };
-
-  const register = () => {
-    if (!mail || !password) {
-      alert("Enter all data pleace!!!");
-      return;
-    }
-    dispatch(fetchLoginUser({ mail, password })).then((result) => {
-      result.type === "auth/fetchLoginUser/fulfilled" &&
-        navigation.navigate("Home", { screen: "PostsScreen" });
-      result.type !== "auth/fetchLoginUser/fulfilled" &&
-        alert("Incorrect login!!!");
-    });
-  };
-
-  const passwShow = () => alert(`Your password is: ${password}`);
-
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      () => {
-        setKeyboardVisible(true);
-      }
-    );
-
-    const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
-      () => {
-        setKeyboardVisible(false);
-      }
-    );
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
+    const onChange = () => {
+      const width = Dimensions.get("window").width;
+      setWindowWidth(width);
+      const height = Dimensions.get("window").height;
+      setWindowHeight(height);
     };
+    const dimensionsHandler = Dimensions.addEventListener("change", onChange);
+
+    return () => dimensionsHandler.remove();
   }, []);
 
+  const emailHandler = (email) => setEmail(email);
+  const passwordHandler = (password) => setPassword(password);
+
+  const onLogin = () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert(`Усі поля мають бути заповнені!`);
+      return;
+    }
+    Alert.alert(`${email}, успішно увійшли!`);
+    const currentUser = {
+      email,
+      password,
+    };
+    // console.log(currentUser);
+    dispatch(authSignInUser(currentUser));
+    setEmail("");
+    setPassword("");
+    Keyboard.dismiss();
+  };
+
+  const keyboardHide = () => {
+    Keyboard.dismiss();
+  };
+
+  useEffect(() => {
+    async function prepare() {
+      await SplashScreen.preventAutoHideAsync();
+    }
+    prepare();
+  }, []);
+
+  const onLayout = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.maincontainer}>
-        <ImageBackground source={backImage} style={styles.backImg}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS == "ios" ? "padding" : "height"}
-            style={styles.containerKeyB}
+    <KeyboardAvoidingView
+      onLayout={onLayout}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <TouchableWithoutFeedback onPress={keyboardHide}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ImageBackground
+            style={{
+              ...styles.imageBG,
+              width: windowWidth,
+              height: windowHeight,
+            }}
+            source={require("../assets/images/imageBG.jpg")}
           >
-            <View style={styles.container}>
-              <Text style={styles.title}>Login</Text>
-
-              <TextInput
-                style={[
-                  styles.inputMailPassw,
-                  input1Focused && styles.inputFocused,
-                ]}
-                placeholder="Email address"
-                inputMode="email"
-                value={mail}
-                onChangeText={handleMail}
-                onFocus={handleInput1Focus}
-                onBlur={handleInput1Blur}
-              />
-              <TextInput
-                style={[
-                  styles.inputMailPassw,
-                  input2Focused && styles.inputFocused,
-                ]}
-                placeholder="Password"
-                secureTextEntry={true}
-                value={password}
-                onChangeText={handlePassword}
-                onFocus={handleInput2Focus}
-                onBlur={handleInput2Blur}
-              />
-
-              <TouchableOpacity
-                style={styles.passwShow}
-                activeOpacity={0.5}
-                onPress={passwShow}
-              >
-                <Text style={styles.passwShowText}>Show</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.registerButton,
-                  keyboardVisible && styles.hiddenButton,
-                ]}
-                activeOpacity={0.5}
-                onPress={() => {
-                  register();
+            <ScrollView>
+              <View
+                style={{
+                  ...styles.wrapper,
+                  width: windowWidth,
+                  marginTop: windowWidth > 500 ? 100 : 293,
                 }}
               >
-                <Text style={styles.registerButtonText}>Login</Text>
-              </TouchableOpacity>
+                <View style={{ width: windowWidth - 16 * 2 }}>
+                  <Text style={{ ...styles.title, fontFamily: "RobotoMedium" }}>
+                    Увійти
+                  </Text>
 
-              <TouchableOpacity
-                style={[
-                  styles.loginLink,
-                  keyboardVisible && styles.hiddenButton,
-                ]}
-                activeOpacity={0.5}
-                onPress={() => navigation.navigate("Registratione", {})}
-              >
-                <Text style={styles.loginLinkText}>
-                  Don't have an account? Register
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </KeyboardAvoidingView>
-        </ImageBackground>
-        <StatusBar style="auto" />
-      </View>
-    </TouchableWithoutFeedback>
+                  <TextInput
+                    style={{
+                      ...styles.input,
+                      borderColor: isFocusedEmail ? "#FF6C00" : "#E8E8E8",
+                      fontFamily: "Roboto",
+                    }}
+                    onFocus={() => setIsFocusedEmail(true)}
+                    onBlur={() => setIsFocusedEmail(false)}
+                    value={email}
+                    placeholder="Адреса електронної пошти"
+                    textContentType={"emailAddress"}
+                    cursorColor={"#BDBDBD"}
+                    placeholderTextColor={"#BDBDBD"}
+                    onChangeText={emailHandler}
+                    keyboardType="email-address"
+                  ></TextInput>
+                  <TextInput
+                    style={{
+                      ...styles.input,
+                      borderColor: isFocusedPassword ? "#FF6C00" : "#E8E8E8",
+                      fontFamily: "Roboto",
+                    }}
+                    onFocus={() => setIsFocusedPassword(true)}
+                    onBlur={() => setIsFocusedPassword(false)}
+                    value={password}
+                    placeholder="Пароль"
+                    textContentType={"password"}
+                    cursorColor={"#BDBDBD"}
+                    placeholderTextColor={"#BDBDBD"}
+                    secureTextEntry={isPasswordHidden}
+                    onChangeText={passwordHandler}
+                  ></TextInput>
+                  <TouchableOpacity
+                    style={styles.showPassword}
+                    onPress={() =>
+                      setIsPasswordHidden((prevState) => !prevState)
+                    }
+                  >
+                    <Text
+                      style={{
+                        ...styles.textShowPassword,
+                        fontFamily: "Roboto",
+                      }}
+                    >
+                      {isPasswordHidden ? "Показати" : "Приховати"}
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.button} onPress={onLogin}>
+                    <Text
+                      style={{ ...styles.textButton, fontFamily: "Roboto" }}
+                    >
+                      Увійти
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate("Registration")}
+                  >
+                    <Text style={{ ...styles.link, fontFamily: "Roboto" }}>
+                      Немає облікового запису? Зареєструватись
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </ScrollView>
+          </ImageBackground>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
-  maincontainer: {
-    flex: 1,
-    alignItems: "center",
-  },
-  backImg: {
-    flex: 1,
-    justifyContent: "flex-end",
-    width: "100%",
-  },
   container: {
-    backgroundColor: "#FFFFFF",
+    flex: 1,
+  },
+  imageBG: {
+    flex: 1,
+    resizeMode: "cover",
+  },
+  wrapper: {
+    flex: 1,
     alignItems: "center",
-    width: "100%",
-    borderTopRightRadius: 25,
+    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 25,
-  },
-  containerKeyB: {
-    justifyContent: "flex-end",
-  },
-  pfotoContainer: {
-    marginTop: -60,
-    height: 120,
-    width: 120,
-    backgroundColor: "#F6F6F6",
-    borderRadius: 16,
-  },
-
-  addbutton: {
-    marginTop: "65%",
-    left: "90%",
-    height: 25,
-    width: 25,
-    pointerEvents: "auto",
+    borderTopRightRadius: 25,
   },
   title: {
-    fontWeight: "500",
+    marginTop: 92,
+    marginBottom: 33,
+    textAlign: "center",
     fontSize: 30,
-    marginTop: 32,
     lineHeight: 35,
+    color: "#212121",
   },
-  inputLogin: {
+  input: {
+    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 15,
     backgroundColor: "#F6F6F6",
-    width: 343,
     height: 50,
-    borderRadius: 8,
-    marginTop: 33,
-    padding: 16,
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 16,
-    lineHeight: 19,
     borderWidth: 1,
-    borderColor: "#E8E8E8",
-  },
-  inputMailPassw: {
-    backgroundColor: "#F6F6F6",
-    width: 343,
-    height: 50,
     borderRadius: 8,
-    padding: 16,
-    marginTop: 16,
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 16,
-    position: "relative",
-    borderWidth: 1,
-    borderColor: "#E8E8E8",
+
+    color: "#212121",
   },
-  inputFocused: {
-    borderColor: "#FF6C00",
-    borderRadius: 8,
-    backgroundColor: "#ebebeb",
-  },
-  passwShowText: {
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 16,
-    lineHeight: 19,
-  },
-  passwShow: {
-    top: -34,
-    left: 130,
-  },
-  registerButton: {
-    backgroundColor: "#FF6C00",
-    height: 50,
-    width: 343,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 100,
-    marginTop: 44,
-  },
-  registerButtonText: {
-    color: "#fff",
-    fontWeight: "400",
-  },
-  hiddenButton: {
-    opacity: 0,
-    height: 0,
-    width: 0,
+  showPassword: {
     position: "absolute",
+    right: 0,
+    bottom: 245,
+    paddingRight: 16,
   },
-  loginLink: {
-    marginTop: 16,
-    marginBottom: 66,
-  },
-  loginLinkText: {
-    fontStyle: "normal",
-    fontWeight: "400",
+  textShowPassword: {
     fontSize: 16,
     lineHeight: 19,
+    color: "#1B4371",
+  },
+
+  button: {
+    height: 51,
+    marginTop: 27,
+    paddingVertical: 16,
+    backgroundColor: "#FF6C00",
+    borderRadius: 100,
+  },
+  textButton: {
+    fontSize: 16,
+    lineHeight: 19,
+    textAlign: "center",
+    color: "#FFFFFF",
+  },
+  link: {
+    marginTop: 16,
+    marginBottom: 100,
+    textAlign: "center",
+    color: "#1B4371",
   },
 });
-
-export default LoginScreen;

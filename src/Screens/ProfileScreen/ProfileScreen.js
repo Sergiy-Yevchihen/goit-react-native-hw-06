@@ -1,265 +1,319 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
+
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 import {
-  View,
-  Text,
-  StyleSheet,
   TouchableOpacity,
-  ImageBackground,
-  SafeAreaView,
-  ScrollView,
+  StyleSheet,
+  View,
   FlatList,
   Image,
+  Text,
+  ImageBackground,
+  Dimensions,
 } from "react-native";
-import { Feather, EvilIcons } from "@expo/vector-icons";
-import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-const backImage = require("../../Source/BG.png");
-const buttonImg = require("../../Source/add.png");
-const profilePhoto = require("../../Source/Rectangle22.png");
 
-import { useSelector } from "react-redux";
-import { selectAuthPosts } from "../../Redux/posts/postsSelectors";
-import { selectUser } from "../../Redux/auth/authSelectors";
-import { selectComments } from "../../Redux/comments/commentsSelectors";
+import { collection, query, onSnapshot, where } from "firebase/firestore";
+import { firestore } from "../firebase/config";
 
-const BottomTabsProf = createBottomTabNavigator();
+import { authSignOutUser } from "../redux/auth/authOperations";
 
-function ProfileScreen({ navigation }) {
-  const allComments = useSelector(selectComments);
+import Message from "../assets/images/message.svg";
+import Like from "../assets/images/like.svg";
+import Location from "../assets/images/location.svg";
+import Logout from "../assets/images/logout.svg";
 
-  const getCommentsCount = (id) => {
-    const comcount = allComments.filter((item) => item.postId === id).length;
-    return comcount;
+export const ProfileScreen = ({ navigation }) => {
+  const [fontsLoaded] = useFonts({
+    Roboto: require("../assets/fonts/Roboto-Regular.ttf"),
+    RobotoMedium: require("../assets/fonts/Roboto-Medium.ttf"),
+    RobotoBold: require("../assets/fonts/Roboto-Bold.ttf"),
+  });
+
+  const [phoneWidth, setPhoneWidth] = useState(Dimensions.get("window").width);
+  const [phoneHeight, setPhoneHeight] = useState(
+    Dimensions.get("window").height
+  );
+
+  const [userPosts, setUserPosts] = useState([]);
+
+  const { login, userId, avatarImage } = useSelector((state) => state.auth);
+
+  const dispatch = useDispatch();
+
+  const getUserPosts = async () => {
+    try {
+      const ref = query(
+        collection(firestore, "posts"),
+        where("userId", "==", `${userId}`)
+      );
+      onSnapshot(ref, (snapshot) => {
+        setUserPosts(
+          snapshot.docs.map((doc) => ({ ...doc.data(), id: doc.id }))
+        );
+      });
+    } catch (error) {
+      console.log("error-message", error.message);
+    }
   };
 
-  const posts = useSelector(selectAuthPosts);
-  const { name, photo } = useSelector(selectUser);
+  useEffect(() => {
+    getUserPosts();
+  }, []);
+
+  useEffect(() => {
+    const onChange = () => {
+      const width = Dimensions.get("window").width;
+      setPhoneWidth(width);
+      const height = Dimensions.get("window").height;
+      setPhoneHeight(height);
+    };
+    const dimensionsHandler = Dimensions.addEventListener("change", onChange);
+
+    return () => dimensionsHandler.remove();
+  }, []);
+
+  useEffect(() => {
+    async function prepare() {
+      await SplashScreen.preventAutoHideAsync();
+    }
+    prepare();
+  }, []);
+
+  const onLayout = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
-    <SafeAreaView>
-      <ScrollView>
-        <ImageBackground source={backImage} style={styles.backImg}>
-          <View
-            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-          >
-            <View style={styles.container}>
-              <View style={styles.pfotoContainer}>
+    <View onLayout={onLayout} style={styles.container}>
+      <ImageBackground
+        style={{
+          ...styles.imageBG,
+          width: phoneWidth,
+          height: phoneHeight,
+        }}
+        source={require("../assets/images/imageBG.jpg")}
+      >
+        <FlatList
+          ListEmptyComponent={
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: "#FFFFFF",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: 16,
+                height: 240,
+                width: phoneWidth,
+              }}
+            >
+              <Text style={{ ...styles.textUserName, fontSize: 16 }}>
+                У Вас немає постів
+              </Text>
+            </View>
+          }
+          ListHeaderComponent={
+            <View
+              style={{
+                ...styles.headerWrapper,
+                marginTop: phoneWidth > 500 ? 100 : 147,
+                width: phoneWidth,
+              }}
+            >
+              <View
+                style={{
+                  ...styles.imageThumb,
+                  left: (phoneWidth - 120) / 2,
+                }}
+              >
                 <Image
-                  source={{ uri: `${photo}` }}
-                  style={{ width: "100%", height: "100%", borderRadius: 15 }}
-                ></Image>
-                <TouchableOpacity style={styles.addbutton} activeOpacity={0.5}>
-                  <ImageBackground
-                    source={buttonImg}
-                    style={{ width: "100%", height: "100%" }}
-                  ></ImageBackground>
-                </TouchableOpacity>
+                  style={styles.avatarImage}
+                  source={{ uri: avatarImage }}
+                />
               </View>
               <TouchableOpacity
                 style={styles.logoutButton}
-                activeOpacity={0.5}
-                onPress={() =>
-                  navigation.navigate("Home", { screen: "PostsScreen" })
-                }
+                onPress={() => dispatch(authSignOutUser())}
               >
-                <Feather name="log-out" size={24} color="gray" />
+                <Logout />
               </TouchableOpacity>
-              <Text style={styles.title}>{name}</Text>
-              <View style={{ flex: 1, justifyContent: "center" }}>
-                <FlatList
-                  data={posts}
-                  keyExtractor={(item, indx) => indx.toString()}
-                  renderItem={({ item }) => (
-                    <View
-                      style={{
-                        marginTop: 20,
-                        marginBottom: 30,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Image
-                        source={{ uri: `${item.photo}` }}
-                        style={{ width: 380, height: 280, borderRadius: 15 }}
-                      />
-                      <Text style={styles.posText}>{item.title}</Text>
-                      <View
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          flexDirection: "row",
-                          width: "85%",
-                        }}
-                      >
-                        <TouchableOpacity
-                          style={styles.info}
-                          onPress={() =>
-                            navigation.navigate("CommentsNav", {
-                              postId: item.id,
-                              postImg: item.photo,
-                            })
-                          }
-                        >
-                          <Feather
-                            name="message-circle"
-                            size={18}
-                            color="gray"
-                          />
-                          <Text>{getCommentsCount(item.id)}</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                          style={styles.info}
-                          onPress={() =>
-                            navigation.navigate("Map", {
-                              location: item.location,
-                            })
-                          }
-                        >
-                          <EvilIcons name="location" size={24} color="gray" />
-                          <Text style={styles.infolink}>
-                            {item.inputRegion}
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  )}
-                ></FlatList>
+              <View
+                style={{
+                  ...styles.userTitleWrapper,
+                  width: phoneWidth - 16 * 2,
+                }}
+              >
+                <Text
+                  style={{ ...styles.userTitle, fontFamily: "RobotoMedium" }}
+                >
+                  {login}
+                </Text>
               </View>
             </View>
-          </View>
-        </ImageBackground>
-      </ScrollView>
-    </SafeAreaView>
+          }
+          data={userPosts}
+          renderItem={({ item }) => (
+            <View
+              style={{
+                ...styles.cardContainer,
+                width: phoneWidth,
+              }}
+            >
+              <Image
+                source={{ uri: item.photo }}
+                style={{
+                  ...styles.cardImage,
+                  width: phoneWidth - 16 * 2,
+                }}
+              />
+              <Text
+                style={{
+                  ...styles.cardTitle,
+                  width: phoneWidth - 16 * 2,
+                  fontFamily: "RobotoMedium",
+                }}
+              >
+                {item.title}
+              </Text>
+              <View style={{ ...styles.cardThumb, width: phoneWidth - 16 * 2 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <TouchableOpacity
+                    style={styles.cardWrapper}
+                    onPress={() =>
+                      navigation.navigate("Коментарі", {
+                        postId: item.id,
+                        postPhoto: item.photo,
+                        commentsQuantity: item.commentsQuantity,
+                      })
+                    }
+                  >
+                    <Message
+                      fill={item.commentsQuantity === 0 ? "#BDBDBD" : "#FF6C00"}
+                    />
+                    <Text style={styles.cardText}>{item.commentsQuantity}</Text>
+                  </TouchableOpacity>
+                  <View style={{ ...styles.cardWrapper, marginLeft: 24 }}>
+                    <Like
+                      fill={item.likesQuantity === 0 ? "#BDBDBD" : "#FF6C00"}
+                    />
+                    <Text style={styles.cardText}>{item.likesQuantity}</Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={styles.cardWrapper}
+                  onPress={() =>
+                    navigation.navigate("Мапа", { location: item.location })
+                  }
+                >
+                  <Location />
+                  <Text style={styles.cardText}></Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{
+            flexGrow: 1,
+            alignItems: "center",
+            borderTopLeftRadius: 25,
+            borderTopRightRadius: 25,
+          }}
+          showsVerticalScrollIndicator={false}
+        />
+      </ImageBackground>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  scrollContainer: {
-    justifyContent: "flex-start",
-    alignItems: "center",
-    width: "100%",
-    backgroundColor: "#FFFFFF",
-    borderTopRightRadius: 25,
-    borderTopLeftRadius: 25,
-  },
-  logoutButton: {
-    marginLeft: 350,
-    marginTop: -40,
-  },
   container: {
-    backgroundColor: "#FFFFFF",
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
-    width: "100%",
-    borderTopRightRadius: 25,
+    height: "100%",
+  },
+  imageBG: {
+    flex: 1,
+    resizeMode: "cover",
+  },
+  headerWrapper: {
+    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 25,
-    marginTop: 200,
+    borderTopRightRadius: 25,
+    alignItems: "center",
   },
-  containerKeyB: {
-    justifyContent: "flex-end",
-  },
-  pfotoContainer: {
-    marginTop: -60,
-    height: 120,
+
+  imageThumb: {
+    position: "absolute",
+    top: -60,
     width: 120,
+    height: 120,
     backgroundColor: "#F6F6F6",
     borderRadius: 16,
-    overflow: "visible",
   },
-
-  addbutton: {
-    marginTop: -40,
-    left: "90%",
-    height: 25,
-    width: 25,
-    pointerEvents: "auto",
+  logoutButton: {
+    position: "absolute",
+    top: 22,
+    right: 16,
   },
-  addButton: {
-    backgroundColor: "#FF6C00",
-    height: 40,
-    width: 70,
-    justifyContent: "center",
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 16,
+    resizeMode: "cover",
+  },
+  userTitleWrapper: {
     alignItems: "center",
-    borderRadius: 20,
+    marginTop: 92,
+    marginBottom: 32,
   },
-  title: {
-    fontWeight: "500",
+  userTitle: {
+    textAlign: "center",
     fontSize: 30,
-    marginTop: 32,
     lineHeight: 35,
+    color: "#212121",
   },
-  inputLogin: {
-    backgroundColor: "#F6F6F6",
-    width: 343,
-    height: 50,
-    borderRadius: 8,
-    marginTop: 33,
-    padding: 16,
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 16,
-    lineHeight: 19,
-  },
-  inputMailPassw: {
-    backgroundColor: "#F6F6F6",
-    width: 343,
-    height: 50,
-    borderRadius: 8,
-    padding: 16,
-    marginTop: 16,
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 16,
-    position: "relative",
-  },
-  passwShowText: {
-    fontStyle: "normal",
-    fontWeight: "400",
-    fontSize: 16,
-    lineHeight: 19,
-  },
-  passwShow: {
-    top: -34,
-    left: 130,
-  },
-  registerButton: {
-    backgroundColor: "#FF6C00",
-    height: 50,
-    width: 343,
-    justifyContent: "center",
+  cardContainer: {
     alignItems: "center",
-    borderRadius: 100,
-    marginTop: 44,
+    backgroundColor: "#FFFFFF",
   },
-  registerButtonText: {
-    color: "#fff",
-    fontWeight: "400",
+  cardImage: {
+    height: 240,
+    resizeMode: "cover",
+    borderRadius: 8,
   },
-  loginLink: {
-    marginTop: 16,
-    marginBottom: 66,
-  },
-  loginLinkText: {
-    fontStyle: "normal",
-    fontWeight: "400",
+  cardTitle: {
+    marginTop: 8,
     fontSize: 16,
     lineHeight: 19,
+    color: "#212121",
   },
-  posText: {
-    alignSelf: "flex-start",
-    marginTop: 8,
-    marginLeft: 40,
-    fontWeight: "500",
-    fontSize: 16,
-  },
-  info: {
+  cardThumb: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 5,
-    padding: 10,
+    marginTop: 8,
+    marginBottom: 35,
   },
-  infolink: {
-    textDecorationLine: "underline",
+  cardWrapper: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cardText: {
+    marginLeft: 4,
+    fontSize: 16,
+    lineHeight: 19,
+    color: "#212121",
   },
 });
-
-export default ProfileScreen;
