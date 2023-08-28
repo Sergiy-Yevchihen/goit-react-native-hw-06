@@ -5,9 +5,9 @@ import { useDispatch } from "react-redux";
 
 import { authSignOutUser } from "../redux/auth/authOperations";
 
-import { PostsScreen } from "../Screens/PostsScreen";
-import { CreatePostsScreen } from "../Screens/CreatePostsScreen";
-import { ProfileScreen } from "../Screens/ProfileScreen";
+import { PostsScreen } from "../Screens/PostsScreen/PostsScreen";
+import { CreatePostsScreen } from "../Screens/CreatePostsScreen/CreatePostsScreen";
+import { ProfileScreen } from "../Screens/ProfileScreen/ProfileScreen";
 
 import ArrowLeft from "../assets/images/arrowLeft.svg";
 import Grid from "../assets/images/grid.svg";

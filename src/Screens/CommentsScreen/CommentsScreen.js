@@ -23,15 +23,15 @@ import {
   onSnapshot,
   updateDoc,
 } from "firebase/firestore";
-import { firestore } from "../firebase/config";
+import { firestore } from "../../firebase/config";
 
-import Send from "../assets/images/send.svg";
+import Send from "../../assets/images/send.svg";
 
 export const CommentsScreen = ({ route }) => {
   const [fontsLoaded] = useFonts({
-    Roboto: require("../assets/fonts/Roboto-Regular.ttf"),
-    RobotoMedium: require("../assets/fonts/Roboto-Medium.ttf"),
-    RobotoBold: require("../assets/fonts/Roboto-Bold.ttf"),
+    Roboto: require("../../assets/fonts/Roboto-Regular.ttf"),
+    RobotoMedium: require("../../assets/fonts/Roboto-Medium.ttf"),
+    RobotoBold: require("../../assets/fonts/Roboto-Bold.ttf"),
   });
 
   const [windowWidth, setWindowWidth] = useState(

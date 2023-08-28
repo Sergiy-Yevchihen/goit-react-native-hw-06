@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
+// import * as SplashScreen from "expo-splash-screen";
+import Spinner from "react-native-loading-spinner-overlay";
 import {
   Image,
   Alert,
@@ -20,18 +21,17 @@ import uuid from "react-native-uuid";
 
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc } from "firebase/firestore";
-import { firestore } from "../firebase/config";
+import { firestore } from "../../firebase/config";
 
-import DownloadPhoto from "../assets/images/downloadPhoto.svg";
-import Location from "../assets/images/location.svg";
-import Trash from "../assets/images/trash.svg";
+import DownloadPhoto from "../../assets/images/downloadPhoto.svg";
+import Location from "../../assets/images/location.svg";
+import Trash from "../../assets/images/trash.svg";
 
 export const CreatePostsScreen = ({ route, navigation }) => {
-  // console.log("qq", route.params)
   const [fontsLoaded] = useFonts({
-    Roboto: require("../assets/fonts/Roboto-Regular.ttf"),
-    RobotoMedium: require("../assets/fonts/Roboto-Medium.ttf"),
-    RobotoBold: require("../assets/fonts/Roboto-Bold.ttf"),
+    Roboto: require("../../assets/fonts/Roboto-Regular.ttf"),
+    RobotoMedium: require("../../assets/fonts/Roboto-Medium.ttf"),
+    RobotoBold: require("../../assets/fonts/Roboto-Bold.ttf"),
   });
 
   const [image, setImage] = useState("");
@@ -41,6 +41,8 @@ export const CreatePostsScreen = ({ route, navigation }) => {
   );
   const [isFocusedTitle, setIsFocusedTitle] = useState(false);
   const [isFocusedLocation, setIsFocusedLocation] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
@@ -72,16 +74,17 @@ export const CreatePostsScreen = ({ route, navigation }) => {
 
   const uploadPostToServer = async () => {
     try {
+      setIsLoading(true);
       const imageRef = await uploadPhotoToServer(image);
-      console.log(
-        imageRef,
-        location,
-        userId,
-        login,
-        regionName,
-        postRef,
-        title
-      );
+      // console.log(
+      //   // imageRef,
+      //   location,
+      //   // userId,
+      //   // login,
+      //   regionName,
+      //   // postRef,
+      //   title
+      // );
       const postRef = await addDoc(collection(firestore, "posts"), {
         photo: imageRef,
         title,
@@ -91,8 +94,9 @@ export const CreatePostsScreen = ({ route, navigation }) => {
         regionName,
         // postRef,
       });
-      Alert.alert(`Ваша публікація пройшла успішно`);
+      // Alert.alert(`Ваша публікація пройшла успішно`);
       navigation.navigate("Публікації");
+      setIsLoading(false);
     } catch (error) {
       console.log("error-message", error.message);
     }
@@ -100,11 +104,11 @@ export const CreatePostsScreen = ({ route, navigation }) => {
 
   const onPublish = () => {
     if (!title.trim() || !location) {
-      Alert.alert(`Усі поля мають бути заповнені!`);
+      // Alert.alert(`Усі поля мають бути заповнені!`);
       return;
     }
     uploadPostToServer();
-    // Alert.alert(`Ваша публікація пройшла успішно`);
+
     setImage();
     setTitle("");
     setLocation("");
@@ -117,7 +121,7 @@ export const CreatePostsScreen = ({ route, navigation }) => {
     setTitle("");
     setLocation("");
     setImage();
-    Alert.alert(`Вилучення пройшло успішно`);
+    // Alert.alert(`Вилучення пройшло успішно`);
     Keyboard.dismiss();
   };
   useEffect(() => {
@@ -125,7 +129,6 @@ export const CreatePostsScreen = ({ route, navigation }) => {
       setImage(route.params.photo);
       setLocation(route.params.location);
       setRegionName(route.params.regionName);
-      console.log(regionName);
     }
   }, [route.params]);
 
@@ -189,9 +192,9 @@ export const CreatePostsScreen = ({ route, navigation }) => {
                 </TouchableOpacity>
               </View>
             )}
-            <View style={{ width: "100%", alignItems: "flex-start" }}>
+            {/* <View style={{ width: "100%", alignItems: "flex-start" }}>
               <Text style={styles.text}>Завантажте фото</Text>
-            </View>
+            </View> */}
             <View style={{ width: windowWidth - 16 * 2 }}>
               <TextInput
                 style={{
@@ -217,21 +220,26 @@ export const CreatePostsScreen = ({ route, navigation }) => {
                 onFocus={() => setIsFocusedLocation(true)}
                 onBlur={() => setIsFocusedLocation(false)}
                 onChangeText={setLocation}
-                // value={
-                //   regionName
-                //     ? `${regionName[0].city}, ${regionName[0].country}`
-                //     : " "
-                // }
+                value={
+                  regionName
+                    ? `${regionName[0].city}, ${regionName[0].country}`
+                    : location
+                }
                 textContentType={"location"}
                 placeholder="Місцевість..."
                 cursorColor={"#BDBDBD"}
                 placeholderTextColor={"#BDBDBD"}
               ></TextInput>
+
               <Location
                 style={styles.locationIcon}
                 onPress={() =>
                   navigation.navigate("Мапа", {
-                    location,
+                    location: {
+                      latitude: regionName[0].latitude,
+                      longitude: regionName[0].longitude,
+                      title,
+                    },
                   })
                 }
               />
@@ -266,6 +274,11 @@ export const CreatePostsScreen = ({ route, navigation }) => {
               <Trash stroke={isDisabledTrash ? "#BDBDBD" : "#FFFFFF"} />
             </TouchableOpacity>
           </View>
+          <Spinner
+            visible={isLoading}
+            textContent={"Завантаження..."}
+            textStyle={{ color: "#FFF" }}
+          />
         </ScrollView>
       </View>
     </KeyboardAvoidingView>
@@ -299,6 +312,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 8,
     borderColor: "#E8E8E8",
+  },
+  locationText: {
+    paddingLeft: 30,
+    marginTop: 16,
+    fontSize: 16,
+    lineHeight: 19,
+    color: "#212121",
+    fontFamily: "Roboto",
   },
   text: {
     marginTop: 8,

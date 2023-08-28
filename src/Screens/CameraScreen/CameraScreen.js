@@ -12,7 +12,7 @@ import {
   Alert,
 } from "react-native";
 
-import DownloadPhoto from "../assets/images/downloadPhoto.svg";
+import DownloadPhoto from "../../assets/images/downloadPhoto.svg";
 
 export const CameraScreen = ({ navigation }) => {
   const [location, setLocation] = useState(null);
@@ -26,7 +26,7 @@ export const CameraScreen = ({ navigation }) => {
   useEffect(() => {
     (async () => {
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
+        let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
           Alert.alert("Не вдалося визначити місцезнаходження");
         }
@@ -36,6 +36,7 @@ export const CameraScreen = ({ navigation }) => {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         });
+
         setLocation(location.coords);
         setRegionName(regionName);
       } catch (error) {
@@ -79,9 +80,11 @@ export const CameraScreen = ({ navigation }) => {
 
   if (photo) {
     const savePic = () => {
-      console.log("uriP12", photo);
+      // console.log("uriP12", photo);
+      // console.log("location", location);
+      //  console.log("regionName", regionName);
       // shareAsync(photo).then(() => {
-        setPhoto(undefined);
+      setPhoto(undefined);
       // });
       navigation.navigate("Створити публікацію", {
         photo,

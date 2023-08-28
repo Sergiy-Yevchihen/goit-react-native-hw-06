@@ -15,20 +15,20 @@ import {
 } from "react-native";
 
 import { collection, query, onSnapshot, where } from "firebase/firestore";
-import { firestore } from "../firebase/config";
+import { firestore } from "../../firebase/config";
 
-import { authSignOutUser } from "../redux/auth/authOperations";
+import { authSignOutUser } from "../../redux/auth/authOperations";
 
-import Message from "../assets/images/message.svg";
-import Like from "../assets/images/like.svg";
-import Location from "../assets/images/location.svg";
-import Logout from "../assets/images/logout.svg";
+import Message from "../../assets/images/message.svg";
+import Like from "../../assets/images/like.svg";
+import Location from "../../assets/images/location.svg";
+import Logout from "../../assets/images/logout.svg";
 
 export const ProfileScreen = ({ navigation }) => {
   const [fontsLoaded] = useFonts({
-    Roboto: require("../assets/fonts/Roboto-Regular.ttf"),
-    RobotoMedium: require("../assets/fonts/Roboto-Medium.ttf"),
-    RobotoBold: require("../assets/fonts/Roboto-Bold.ttf"),
+    Roboto: require("../../assets/fonts/Roboto-Regular.ttf"),
+    RobotoMedium: require("../../assets/fonts/Roboto-Medium.ttf"),
+    RobotoBold: require("../../assets/fonts/Roboto-Bold.ttf"),
   });
 
   const [phoneWidth, setPhoneWidth] = useState(Dimensions.get("window").width);
@@ -98,7 +98,7 @@ export const ProfileScreen = ({ navigation }) => {
           width: phoneWidth,
           height: phoneHeight,
         }}
-        source={require("../assets/images/imageBG.jpg")}
+        source={require("../../assets/images/imageBG.jpg")}
       >
         <FlatList
           ListEmptyComponent={

@@ -25,16 +25,16 @@ import uuid from "react-native-uuid";
 
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-import Add from "../assets/images/add.svg";
-import Delete from "../assets/images/delete.svg";
+import Add from "../../assets/images/add.svg";
+import Delete from "../../assets/images/delete.svg";
 
-import { authSignUpUser } from "../redux/auth/authOperations";
+import { authSignUpUser } from "../../redux/auth/authOperations";
 
 export const RegistrationScreen = ({ navigation }) => {
   const [fontsLoaded] = useFonts({
-    Roboto: require("../assets/fonts/Roboto-Regular.ttf"),
-    RobotoMedium: require("../assets/fonts/Roboto-Medium.ttf"),
-    RobotoBold: require("../assets/fonts/Roboto-Bold.ttf"),
+    Roboto: require("../../assets/fonts/Roboto-Regular.ttf"),
+    RobotoMedium: require("../../assets/fonts/Roboto-Medium.ttf"),
+    RobotoBold: require("../../assets/fonts/Roboto-Bold.ttf"),
   });
 
   const [pickedImagePath, setPickedImagePath] = useState("");
@@ -181,7 +181,7 @@ export const RegistrationScreen = ({ navigation }) => {
               width: windowWidth,
               height: windowHeight,
             }}
-            source={require("../assets/images/imageBG.jpg")}
+            source={require("../../assets/images/imageBG.jpg")}
           >
             <ScrollView>
               <View

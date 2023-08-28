@@ -2,12 +2,12 @@ import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import { Home } from "../Screens/Home/Home";
-import { RegistrationScreen } from "../Screens/RegistrationScreen";
-import { LoginScreen } from "../Screens/LoginScreen";
-import { CreatePostsScreen } from "../Screens/CreatePostsScreen";
-import { CommentsScreen } from "../Screens/CommentsScreen";
-import { MapScreen } from "../Screens/MapScreen";
-import { CameraScreen } from "../Screens/CameraScreen";
+import { RegistrationScreen } from "../Screens/RegistrationScreen/RegistrationScreen";
+import { LoginScreen } from "../Screens/LoginScreen/LoginScreen";
+import { CreatePostsScreen } from "../Screens/CreatePostsScreen/CreatePostsScreen";
+import { CommentsScreen } from "../Screens/CommentsScreen/CommentsScreen";
+import { MapScreen } from "../Screens/MapScreen/MapScreen";
+import { CameraScreen } from "../Screens/CameraScreen/CameraScreen";
 
 const AuthStack = createStackNavigator();
 const MainStack = createStackNavigator();

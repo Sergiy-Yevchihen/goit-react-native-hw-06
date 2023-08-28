@@ -18,13 +18,13 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { useDispatch } from "react-redux";
 
-import { authSignInUser } from "../redux/auth/authOperations";
+import { authSignInUser } from "../../redux/auth/authOperations";
 
 export const LoginScreen = ({ navigation }) => {
   const [fontsLoaded] = useFonts({
-    Roboto: require("../assets/fonts/Roboto-Regular.ttf"),
-    RobotoMedium: require("../assets/fonts/Roboto-Medium.ttf"),
-    RobotoBold: require("../assets/fonts/Roboto-Bold.ttf"),
+    Roboto: require("../../assets/fonts/Roboto-Regular.ttf"),
+    RobotoMedium: require("../../assets/fonts/Roboto-Medium.ttf"),
+    RobotoBold: require("../../assets/fonts/Roboto-Bold.ttf"),
   });
 
   const [email, setEmail] = useState("");
@@ -112,7 +112,7 @@ export const LoginScreen = ({ navigation }) => {
               width: windowWidth,
               height: windowHeight,
             }}
-            source={require("../assets/images/imageBG.jpg")}
+            source={require("../../assets/images/imageBG.jpg")}
           >
             <ScrollView>
               <View
